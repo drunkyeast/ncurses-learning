@@ -10,23 +10,52 @@ int main(int argc, char* argv[])
     int yMax, xMax;
     getmaxyx(stdscr, yMax, xMax);
 
-    WINDOW * inputwin = newwin(3, xMax - 12, yMax - 5, 5);
-    box(inputwin, 0, 0);
+    WINDOW * menuwin = newwin(6, xMax - 12, yMax - 8, 5);
+    box(menuwin, 0, 0);
     refresh();
-    wrefresh(inputwin);
+    wrefresh(menuwin);
+    keypad(menuwin, true); // use arrow keys
 
-    keypad(inputwin, true);
-    int c = wgetch(inputwin);
-    if (c == KEY_UP)
+    std::string choices[3]{"Walk", "Jog", "Run"};
+    int choice;
+    int highlight{0};
+
+    while(1)
     {
-        mvwprintw(inputwin, 1, 1, "You pressed up!");
-        wrefresh(inputwin);
+        for (int i = 0; i < 3; i++)
+        {
+            if (i == highlight)
+            {
+                wattron(menuwin, A_REVERSE);
+            }
+            mvwprintw(menuwin, i + 1, 1, choices[i].c_str());
+            wattroff(menuwin, A_REVERSE);
+        }
+        choice = wgetch(menuwin);
+
+        switch(choice)
+        {
+        case KEY_UP:
+            highlight--;
+            if (highlight < 0)
+                highlight = 0;
+            break;
+        case KEY_DOWN:
+            highlight++;
+            if (highlight > 2)
+                highlight = 2;
+            break;
+        default:
+            break;
+            
+        }
+
+        if (choice == '\n') // enter在linux下只产生'\n', 值为10
+            break;
     }
-    else
-    {
-        mvwprintw(inputwin, 1, 1, "You pressed %c", c);
-        wrefresh(inputwin);
-    }
+
+    printw("Your choice was: %s", choices[highlight].c_str());
+
 
     getch();
     endwin();
