@@ -81,14 +81,62 @@ public:
     {
         for (int i = 0; i < num_menus; i ++)
         {
-            int start_x = menus[i].start_x;
-            const char* text = menus[i].text.c_str();
-            if (selected_menu == i)
-                wattron(win, A_STANDOUT);
-            mvwprintw(win, 0, start_x, text);
-            wattroff(win, A_STANDOUT);
+            drawMenu(menus[i], selected_menu == i);
         }
         selected_menu = -1;
+    }
+
+    void drawMenu(Menu menu, bool is_selected)
+    {
+        int start_x = menu.start_x;
+        const char* text = menu.text.c_str();
+        if (is_selected)
+            wattron(win, A_STANDOUT);
+        mvwprintw(win, 0, start_x, text);
+        wattroff(win, A_STANDOUT);
+        wrefresh(win);
+
+        int ch;
+        drawMenuItems(menu);
+        wrefresh(menuwin);
+        while(is_selected && (ch = wgetch(menuwin)))
+        {
+            switch(ch)
+            {
+            case KEY_UP:
+                menu.selectPreItem();
+                break;
+            case KEY_DOWN:
+                menu.selectNextItem();
+                break;
+            default:
+                is_selected = false; // 如果不按上下键, 那就关闭子菜单的显示.
+                break;
+            }
+            drawMenuItems(menu);
+        }
+        werase(menuwin);
+        wrefresh(menuwin);
+        // wrefresh(win); // ??
+        reset();
+    }
+
+    void drawMenuItems(Menu menu)
+    {
+        int yMax, xMax;
+        getmaxyx(menuwin, yMax, xMax);
+        for (int i = 0; i < menu.num_items; i ++)
+        {
+            mvwprintw(menuwin, i, 0, menu.items[i].c_str());
+            if (menu.selected_item == i)
+            {
+                mvwchgat(menuwin, i, 0, xMax, A_NORMAL, 1, NULL);// move change atrribute 倒数第二个1是我之前设置的init_pair?
+            }
+            else
+            {
+                mvwchgat(menuwin, i, 0, xMax, A_STANDOUT, 0, NULL); // A_STANDOUT A_NORMAL 可以试试.
+            }
+        }
     }
 
     void handleTrigger(char trigger)
