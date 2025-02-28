@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <ncurses.h>
+#include <curses.h>
 
 using namespace std;
 
